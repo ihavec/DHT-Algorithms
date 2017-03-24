@@ -13,12 +13,16 @@ tree -- by larkguo@gmail.com
 	/UPnP/DM/Enable = 1
 	/UPnP/DM/Status = OK
 
-	tree_print(/UPnP):
-	/UPnP/DM/Enable=1
-	/UPnP/DM/Status=OK
+	tree_print(/):
+	BBF=(null)
+	UPnP=(null)
+	DM=(null)
+	Enable=1
+	Status=OK
 
 	tree_node_get(/UPnP/DM/Status):
 	Status=OK
+
 */
 #include "tree.h"
 
@@ -77,12 +81,15 @@ node_free_recursive(Node *parent)
 {
 	Node *child = NULL;
 	Node *sibling = NULL;
+	
 	if(NULL == parent) 	return;
 
 	child = parent->first_child;
 
-	/* node's children && brother */
-	while( NULL != child){
+	while(1) { 
+		
+		if( NULL == child )	return;
+
 		/* until leaf */
 		node_free_recursive(child);
 
@@ -264,23 +271,21 @@ node_append(Node *parent, Node *node)
 * The node itself is not print. This is a recursive function.
 * @param parent
 */
-void 
-node_print_recursive(Node *parent)
+void node_print_recursive(Node *parent)
 {
 	Node *child = parent->first_child;
-
-	while( NULL != child){
-		if (strlen(child->path) == strlen(ROOT_PATH)){
-			printf("%s%s=%s\n",ROOT_PATH,child->name,child->value );
-		}else{
-			printf("%s/%s=%s\n",child->path,child->name,child->value );
-		}
-
+	while(1) { 
+		
+		if( NULL == child )	return;
+		
+		printf("%s=%s\n",child->name,child->value);
+		
 		node_print_recursive(child);
-
+		
 		child = child->next_sibling;
 	}
 }
+
 
 /**
 * @fn void node_foreach_recursive(Node *parent)
@@ -300,14 +305,15 @@ node_foreach_recursive(Node *parent, NodeForeach func)
 
 	child = parent->first_child;
 
-	while(NULL != child){
+	while(1) { 
+		
+		if( NULL == child )	return;
 
 		func(child);
 		node_foreach_recursive(child,func);
 
 		child = child->next_sibling;
 	}
-
 }
 
 /**
@@ -321,10 +327,12 @@ node_foreach_recursive(Node *parent, NodeForeach func)
 void 
 node_xml_write_recursive(FILE *fd,Node *parent)
 {
-	Node *sibling;
 	Node *child = parent->first_child;
 
-	while( NULL != child){
+	while(1) { 
+		
+		if( NULL == child )	return;
+		
 		// <name> 
 		if(NULL != child->name){
 			fwrite("\n<", strlen("\n<"), 1, fd);
@@ -347,9 +355,8 @@ node_xml_write_recursive(FILE *fd,Node *parent)
 			fwrite(child->name,strlen(child->name),1,fd);
 			fwrite(">", strlen(">"), 1, fd);
 		}
-
-		sibling = child->next_sibling;
-		child = sibling;
+		
+		child = child->next_sibling;
 	}
 }
 
@@ -364,10 +371,11 @@ node_xml_write_recursive(FILE *fd,Node *parent)
 void 
 node_json_write_recursive(FILE *fd,Node *parent)
 {
-	Node *sibling;
 	Node *child = parent->first_child;
 
-	while( NULL != child){
+	while(1) { 
+		
+		if( NULL == child )	return;
 
 		if( NULL != child->first_child){
 			if(NULL != child->name){
@@ -400,8 +408,7 @@ node_json_write_recursive(FILE *fd,Node *parent)
 			fwrite("\n}", strlen("\n}"), 1, fd);	
 		}
 
-		sibling = child->next_sibling;
-		child = sibling;
+		child = child->next_sibling;
 	}
 }
 
@@ -416,10 +423,12 @@ node_json_write_recursive(FILE *fd,Node *parent)
 void 
 node_ini_write_recursive(FILE *fd, Node *parent)
 {
-	Node *sibling;
 	Node *child = parent->first_child;
 
-	while( NULL != child){
+	while(1) { 
+		
+		if( NULL == child )	return;
+		
 		if(NULL==child->first_child && 0!=strcmp(ROOT_PATH,child->path)){
 			fwrite("\n[", strlen("\n["), 1, fd);
 			fwrite(child->path,strlen(child->path),1,fd);
@@ -437,8 +446,7 @@ node_ini_write_recursive(FILE *fd, Node *parent)
 
 		node_ini_write_recursive(fd, child);
 
-		sibling = child->next_sibling;
-		child = sibling;
+		child = child->next_sibling;
 	}
 }
 
@@ -699,11 +707,14 @@ int main(int argc,char *argv[])
 	printf("tree_foreach(%s):\n",ROOT_PATH);
 	tree_foreach(NULL, node_print);
 
+	
+	node = tree_node_get(ROOT_PATH);
 	printf("\ntree_print(%s):\n",node->path);
 	tree_print(node);
 
 	node = tree_node_get(path);
-	printf("\ntree_node_get(%s):\n%s=%s\n", path,node->name,node->value );
+	printf("\ntree_node_get(%s):\n%s=%s\n", 
+		path,node->name,node->value );
 
 	tree_xml_write("config.xml");
 	tree_json_write("config.json");
