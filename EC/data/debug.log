@@ -1,0 +1,248 @@
+[root@host99 test]# go build stream-encoder.go 
+[root@host99 test]# go build simple-decoder.go 
+[root@host99 test]# go build simple-encoder.go 
+[root@host99 test]# go build stream-encoder.go 
+[root@host99 test]# go build stream-decoder.go 
+[root@host99 test]# 
+==============================================simple==============================================
+[root@host99 test]# ./stream-encoder 
+Error: No input filename given
+Usage of ./stream-encoder:
+  ./stream-encoder [-flags] filename.ext
+
+Valid flags:
+  -data int
+        Number of shards to split the data into, must be below 257. (default 4)
+  -out string
+        Alternative output directory
+  -par int
+        Number of parity shards (default 2)
+[root@host99 test]# ./simple-decoder 
+Error: No filenames given
+Usage of ./simple-decoder:
+  simple-decoder [-flags] basefile.ext
+Do not add the number to the filename.
+Valid flags:
+  -data int
+        Number of shards to split the data into (default 4)
+  -out string
+        Alternative output path/file
+  -par int
+        Number of parity shards (default 2)
+[root@host99 test]# ll
+total 9160
+-rwxr-xr-x 1 root root 2309342 Aug 30 10:20 simple-decoder
+-rw-r--r-- 1 root root    3116 Aug 30 10:18 simple-decoder.go
+-rwxr-xr-x 1 root root 2317595 Aug 30 10:20 simple-encoder
+-rw-r--r-- 1 root root    2900 Aug 30 10:19 simple-encoder.go
+-rwxr-xr-x 1 root root 2357539 Aug 30 10:20 stream-decoder
+-rw-r--r-- 1 root root    4108 Aug 30 10:19 stream-decoder.go
+-rwxr-xr-x 1 root root 2365891 Aug 30 10:20 stream-encoder
+-rw-r--r-- 1 root root    3430 Aug 30 10:20 stream-encoder.go
+-rw-r--r-- 1 root root      16 Aug 30 10:32 test
+[root@host99 test]# hexdump test 
+0000000 6568 6c6c 206f 6f77 6c72 2164 000a 0000
+0000010
+[root@host99 test]# cat test 
+hello world!
+[root@host99 test]# ./simple-encoder test
+Opening test
+File split into 6 data+parity shards with 4 bytes/shard.
+Writing to test.0
+Writing to test.1
+Writing to test.2
+Writing to test.3
+Writing to test.4
+Writing to test.5
+[root@host99 test]# ls
+simple-decoder     simple-encoder     stream-decoder     stream-encoder     test    test.1  test.3  test.5
+simple-decoder.go  simple-encoder.go  stream-decoder.go  stream-encoder.go  test.0  test.2  test.4
+[root@host99 test]# rm -f test
+[root@host99 test]# cat test.0
+hell[root@host99 test]# cat test.1
+o wo[root@host99 test]# cat test.2
+rld![root@host99 test]# cat test.3
+
+[root@host99 test]# cat test.4
+NOÆU[root@host99 test]# cat test.5
+VüÂš[root@host99 test]# hexdump test.0
+0000000 6568 6c6c                              
+0000004
+[root@host99 test]# hexdump test.1
+0000000 206f 6f77                              
+0000004
+[root@host99 test]# hexdump test.2
+0000000 6c72 2164                              
+0000004
+[root@host99 test]# hexdump test.3
+0000000 000a 0000                              
+0000004
+[root@host99 test]# hexdump test.4
+0000000 4f4e 55c6                              
+0000004
+[root@host99 test]# hexdump test.5
+0000000 fc56 9ac2                              
+0000004
+[root@host99 test]# rm -f test.1
+[root@host99 test]# rm -f test.4
+[root@host99 test]# ls
+simple-decoder     simple-encoder     stream-decoder     stream-encoder     test.0  test.3
+simple-decoder.go  simple-encoder.go  stream-decoder.go  stream-encoder.go  test.2  test.5
+[root@host99 test]# ./simple-decoder test
+Opening test.0
+Opening test.1
+Error reading file open test.1: no such file or directory
+Opening test.2
+Opening test.3
+Opening test.4
+Error reading file open test.4: no such file or directory
+Opening test.5
+Verification failed. Reconstructing data
+Writing data to test
+[root@host99 test]# cat test
+hello world!
+[root@host99 test]# 
+==============================================stream==============================================
+[root@host99 test]# ./stream-encoder
+Error: No input filename given
+Usage of ./stream-encoder:
+  ./stream-encoder [-flags] filename.ext
+
+Valid flags:
+  -data int
+        Number of shards to split the data into, must be below 257. (default 4)
+  -out string
+        Alternative output directory
+  -par int
+        Number of parity shards (default 2)
+[root@host99 test]# ./stream-decoder 
+Error: No filenames given
+Usage of ./stream-decoder:
+  ./stream-decoder [-flags] basefile.ext
+Do not add the number to the filename.
+Valid flags:
+  -data int
+        Number of shards to split the data into (default 4)
+  -out string
+        Alternative output path/file
+  -par int
+        Number of parity shards (default 2)
+[root@host99 test]# 
+[root@host99 test]# ./stream-encoder test
+Opening test
+Creating test.0
+Creating test.1
+Creating test.2
+Creating test.3
+Creating test.4
+Creating test.5
+File split into 4 data + 2 parity shards.
+[root@host99 test]# ll
+total 9184
+-rwxr-xr-x 1 root root 2309342 Aug 30 10:40 simple-decoder
+-rw-r--r-- 1 root root    3116 Aug 30 10:18 simple-decoder.go
+-rwxr-xr-x 1 root root 2317595 Aug 30 10:40 simple-encoder
+-rw-r--r-- 1 root root    2900 Aug 30 10:19 simple-encoder.go
+-rwxr-xr-x 1 root root 2357539 Aug 30 10:40 stream-decoder
+-rw-r--r-- 1 root root    4108 Aug 30 10:19 stream-decoder.go
+-rwxr-xr-x 1 root root 2365891 Aug 30 10:40 stream-encoder
+-rw-r--r-- 1 root root    3430 Aug 30 10:20 stream-encoder.go
+-rw-r--r-- 1 root root      16 Aug 30 10:34 test
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.0
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.1
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.2
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.3
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.4
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.5
+[root@host99 test]# 
+[root@host99 test]# cat test.0
+hell[root@host99 test]# cat test.5
+VüÂš[root@host99 test]# 
+[root@host99 test]# hexdump test.5
+0000000 fc56 9ac2                              
+0000004
+[root@host99 test]# hexdump test.4
+0000000 4f4e 55c6                              
+0000004
+[root@host99 test]# hexdump test.3
+0000000 000a 0000                              
+0000004
+[root@host99 test]# hexdump test.2
+0000000 6c72 2164                              
+0000004
+[root@host99 test]# hexdump test.1
+0000000 206f 6f77                              
+0000004
+[root@host99 test]# hexdump test.0
+0000000 6568 6c6c                              
+0000004
+[root@host99 test]# rm -f test
+[root@host99 test]# rm -f test.0
+[root@host99 test]# rm -f test.5
+[root@host99 test]# ll
+total 9172
+-rwxr-xr-x 1 root root 2309342 Aug 30 10:40 simple-decoder
+-rw-r--r-- 1 root root    3116 Aug 30 10:18 simple-decoder.go
+-rwxr-xr-x 1 root root 2317595 Aug 30 10:40 simple-encoder
+-rw-r--r-- 1 root root    2900 Aug 30 10:19 simple-encoder.go
+-rwxr-xr-x 1 root root 2357539 Aug 30 10:40 stream-decoder
+-rw-r--r-- 1 root root    4108 Aug 30 10:19 stream-decoder.go
+-rwxr-xr-x 1 root root 2365891 Aug 30 10:40 stream-encoder
+-rw-r--r-- 1 root root    3430 Aug 30 10:20 stream-encoder.go
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.1
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.2
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.3
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.4
+[root@host99 test]# ./stream-decoder test
+Opening test.0
+Error reading file open test.0: no such file or directory
+Opening test.1
+Opening test.2
+Opening test.3
+Opening test.4
+Opening test.5
+Error reading file open test.5: no such file or directory
+Verification failed. Reconstructing data
+Opening test.0
+Error reading file open test.0: no such file or directory
+Opening test.1
+Opening test.2
+Opening test.3
+Opening test.4
+Opening test.5
+Error reading file open test.5: no such file or directory
+Creating test.0
+Creating test.5
+Opening test.0
+Opening test.1
+Opening test.2
+Opening test.3
+Opening test.4
+Opening test.5
+Writing data to test
+Opening test.0
+Opening test.1
+Opening test.2
+Opening test.3
+Opening test.4
+Opening test.5
+[root@host99 test]# cat test
+hello world!
+[root@host99 test]# ll
+total 9184
+-rwxr-xr-x 1 root root 2309342 Aug 30 10:40 simple-decoder
+-rw-r--r-- 1 root root    3116 Aug 30 10:18 simple-decoder.go
+-rwxr-xr-x 1 root root 2317595 Aug 30 10:40 simple-encoder
+-rw-r--r-- 1 root root    2900 Aug 30 10:19 simple-encoder.go
+-rwxr-xr-x 1 root root 2357539 Aug 30 10:40 stream-decoder
+-rw-r--r-- 1 root root    4108 Aug 30 10:19 stream-decoder.go
+-rwxr-xr-x 1 root root 2365891 Aug 30 10:40 stream-encoder
+-rw-r--r-- 1 root root    3430 Aug 30 10:20 stream-encoder.go
+-rw-r--r-- 1 root root      16 Aug 30 10:53 test
+-rw-r--r-- 1 root root       4 Aug 30 10:53 test.0
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.1
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.2
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.3
+-rw-r--r-- 1 root root       4 Aug 30 10:52 test.4
+-rw-r--r-- 1 root root       4 Aug 30 10:53 test.5
+[root@host99 test]# 
