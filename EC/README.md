@@ -1,5 +1,5 @@
 
-# 纠删码算法原理
+# EC纠删码原理
 
 	阵列纠删码(RAID5、RAID6等)是EC(Erasure Code)纠删码(不是纠错码)的子集, EC算法支持跨节点.
 	RS(reed-solomon)码是一种常见的纠删码, RS编码数据和恢复数据过程原理如下。
@@ -49,16 +49,23 @@
 
     因此，为了制作解码矩阵，过程是采用原始编码矩阵，将缺失部分的行划掉，然后找到逆矩阵。
 	然后，您可以将逆矩阵与现有数据矩阵相乘。
-    下图演示对test原始数据进行4切片，2校验，共生成6份文件test.N，删除test,test.1和test.4后进行恢复：
+	
+## 6. 验证
+
+### 	
+    下图演示对test原始数据进行4切片，2校验，共生成6份文件test.N，删除test,test.1和test.4后进行恢复,。
+	注意：编码时会4字节补齐。
 ![image](https://github.com/larkguo/Algorithms/blob/master/EC/data/debug.png)
 
 
+## 7. 参考
 
-以上纠删码算法实现见 https://github.com/klauspost/reedsolomon
+### 
+Go算法实现 https://github.com/klauspost/reedsolomon
 
-编码数据验证代码见[encode.go](https://github.com/larkguo/Algorithms/blob/master/EC/encode.go)
+编码验证[encode.go](https://github.com/larkguo/Algorithms/blob/master/EC/encode.go)
 
-恢复数据验证代码[decode.go](https://github.com/larkguo/Algorithms/blob/master/EC/decode.go)
+解码验证[decode.go](https://github.com/larkguo/Algorithms/blob/master/EC/decode.go)
 
 原理参考 https://www.backblaze.com/blog/reed-solomon/
 
