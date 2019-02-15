@@ -2,7 +2,7 @@
 # ceph crush算法
 
 ceph把数据保存到ceph集群分为以下两步：
-  1) hash(object_name) -> pg, 把file保存到object中后，使用hash_rjenkins(object_name)算法映射pg, 类似一致性hash。
+  1) hash(object_name) -> pg, 把数据保存到object中后，使用hash_rjenkins(object_name)算法映射pg, 类似一致性hash。
   2) straw(pg) -> osd, 使用straw算法映射osd,osd的权重越大随机被挑中的概率越大。
 
 下文把crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行。
