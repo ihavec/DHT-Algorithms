@@ -4,12 +4,13 @@
 ceph把数据保存到ceph集群分为以下两步：
   1) hash(object_name) -> pg, 把file保存到object中后，使用hash_rjenkins(object_name)算法映射pg, 类似一致性hash。
   2) straw(pg) -> osd, 使用straw算法映射osd,osd的权重越大随机被挑中的概率越大。
+
 下文把crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行。
 	
 ## 1. crush算法演示
 
 ### 
-		crush hash_rjenkins和straw算法演示：
+		[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins和straw算法演示：
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/crush-test.png)
 
     使用ceph命令创建pool1,把文件test.txt保存到对象object1里，查询在osd上的映射，可以看出与上面pg和osd的映射一致：
