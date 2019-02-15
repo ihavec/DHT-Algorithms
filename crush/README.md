@@ -17,6 +17,8 @@ ceph把数据保存到ceph集群分为以下两步：
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
 ## 2. hash_rjenkins算法源码
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)hash_rjenkins算法源码.
+
 unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 
 根据object name计算对应hash值,后续用该值除以pg的总数得到映射的pg.
@@ -98,6 +100,8 @@ unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 		}
 
 ## 3. straw算法源码
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)straw算法源码.
+
 osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
 
 (osd_draw &0xFFFF) * osd_weight 遍历osd选择值最大的osd,weiht越大,选中几率越大.
@@ -170,33 +174,9 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 			}
 			return high;
 		}
-
-## 4. crush算法伪代码
-贴出CRUSH完整算法伪代码，便于理解:
-### 
-		locator = object_name
-		obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins
-		pg = obj_hash % num_pg
-		OSDs_for_pg = crush(pg)  #此处是多次调用bucket_straw_choose返回结果
-		primary = osds_for_pg[0]
-		replicas = osds_for_pg[1:]
-	
-		def crush(pg):  # straw算法
-		   all_osds = ['osd.0', 'osd.1', 'osd.2', ...]
-		   result = []
-		   # size is the number of copies; primary+replicas
-		   while len(result) < size:
-		       r = hash(pg)
-		       chosen = all_osds[ r % len(all_osds) ]
-		       if chosen in result:  #直到选出3个不一样的OSD
-		           # OSD can be picked only once
-		           continue
-		       result.append(chosen)
-		   return result
-		  
 		   
-## 5. 算法调用
-
+## 4. 算法调用
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)hash_rjenkins和straw算法调用.
 ### 
 		int main()
 		{
@@ -219,7 +199,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 				pool_name,pool_id,object_name,pool_id,obj_hash,pool_id,pg,primary,replicas1,replicas2);
 		}
 
-## 6. ceph测试环境
+## 5. ceph测试环境
 
 ### 
 ceph测试版本,osd,pg,crush map环境:
@@ -227,14 +207,36 @@ ceph测试版本,osd,pg,crush map环境:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-map.png)
 
 ## 6. ceph架构
-
-### 
 贴出ceph架构，便于理解:
+### 
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-architecture1.png)
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-architecture2.png)
 
-
-## 9. 参考
+## 7. crush算法伪代码
+贴出CRUSH完整算法伪代码，便于理解:
+### 
+		locator = object_name
+		obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins
+		pg = obj_hash % num_pg
+		OSDs_for_pg = crush(pg)  #此处是多次调用bucket_straw_choose返回结果
+		primary = osds_for_pg[0]
+		replicas = osds_for_pg[1:]
+	
+		def crush(pg):  # straw算法
+		   all_osds = ['osd.0', 'osd.1', 'osd.2', ...]
+		   result = []
+		   # size is the number of copies; primary+replicas
+		   while len(result) < size:
+		       r = hash(pg)
+		       chosen = all_osds[ r % len(all_osds) ]
+		       if chosen in result:  #直到选出3个不一样的OSD
+		           # OSD can be picked only once
+		           continue
+		       result.append(chosen)
+		   return result
+		  
+		  
+## 8. 参考
 
 ### 
 crush的hash_rjenkins和straw算法代码 [crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)
