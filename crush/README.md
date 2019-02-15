@@ -5,7 +5,7 @@ ceph把数据保存到ceph集群分为以下两步：
   1) hash(object_name) -> pg, 把数据保存到object中后，使用hash_rjenkins(object_name)算法映射pg, 类似一致性hash。
   2) straw(pg) -> osd, 使用straw算法映射osd,osd的权重越大随机被挑中的概率越大。
 
-下文把crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行。
+下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行。
 	
 ## 1. crush算法演示
 
@@ -17,8 +17,8 @@ ceph把数据保存到ceph集群分为以下两步：
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
 ## 2. hash_rjenkins算法源码
-		unsigned object_hash = ceph_str_hash_rjenkins(object_name).
-		根据object name计算对应hash值,后续用该值除以pg的总数得到映射的pg.
+	unsigned object_hash = ceph_str_hash_rjenkins(object_name).
+	根据object name计算对应hash值,后续用该值除以pg的总数得到映射的pg.
 ###
 		/*
 		 * Robert Jenkin's hash function.
@@ -97,10 +97,9 @@ ceph把数据保存到ceph集群分为以下两步：
 		}
 
 ## 3. straw算法源码
-		 osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
-		 (osd_draw &0xFFFF) * osd_weight 遍历osd选择值最大的osd,weiht越大,选中几率越大.
+	osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
+	(osd_draw &0xFFFF) * osd_weight 遍历osd选择值最大的osd,weiht越大,选中几率越大.
 ### 
-
 		/*
 		 * Robert Jenkins' function for mixing 32-bit values
 		 * http://burtleburtle.net/bob/hash/evahash.html
@@ -171,7 +170,7 @@ ceph把数据保存到ceph集群分为以下两步：
 		}
 
 ## 4. crush算法伪代码
-		贴出CRUSH完整算法伪代码，便于理解。
+	贴出CRUSH完整算法伪代码，便于理解。
 ### 
 		locator = object_name
 		obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins
@@ -223,15 +222,13 @@ ceph把数据保存到ceph集群分为以下两步：
 ### 
     ceph测试版本和环境:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-env.png)
-
-    ceph map:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-map.png)
 
 
 ## 6. ceph架构
 
 ### 
-    贴出ceph架构，便于理解:
+	贴出ceph架构，便于理解:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-architecture1.png)
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-architecture2.png)
 
