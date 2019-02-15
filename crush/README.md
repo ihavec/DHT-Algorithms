@@ -11,9 +11,11 @@ ceph把数据保存到ceph集群分为以下两步：
 
 ### 
 [crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins和straw算法演示：
+
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/crush-test.png)
 
 使用ceph命令创建pool1,把文件test.txt保存到对象object1里，查询在osd上的映射，可以看出与上面pg和osd的映射一致：
+
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
 ## 2. hash_rjenkins算法源码
