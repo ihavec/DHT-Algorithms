@@ -206,7 +206,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 ### 
 ceph测试版本,osd,pg,crush map环境:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-env.png)
-![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-map.png)
+![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/crush-map.png)
 
 ## 6. ceph架构
 贴出ceph架构，便于理解:
