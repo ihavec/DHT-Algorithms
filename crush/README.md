@@ -18,6 +18,7 @@ ceph把数据保存到ceph集群分为以下两步：
    
 ## 2. hash_rjenkins算法源码
 unsigned object_hash = ceph_str_hash_rjenkins(object_name).
+
 根据object name计算对应hash值,后续用该值除以pg的总数得到映射的pg.
 ###
 		/*
@@ -98,6 +99,7 @@ unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 
 ## 3. straw算法源码
 osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
+
 (osd_draw &0xFFFF) * osd_weight 遍历osd选择值最大的osd,weiht越大,选中几率越大.
 ### 
 		/*
@@ -170,7 +172,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 		}
 
 ## 4. crush算法伪代码
-贴出CRUSH完整算法伪代码，便于理解。
+贴出CRUSH完整算法伪代码，便于理解:
 ### 
 		locator = object_name
 		obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins
@@ -220,7 +222,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 ## 6. ceph测试环境
 
 ### 
-ceph测试版本和环境:
+ceph测试版本,osd,pg,crush map环境:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-env.png)
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-map.png)
 
