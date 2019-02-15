@@ -2,10 +2,10 @@
 # ceph crush算法
 
 ceph把数据保存到ceph集群分为以下两步：
-  1) hash(object_name) -> pg, 把数据保存到object中后，使用hash_rjenkins(object_name)算法映射pg, 类似一致性hash。
-  2) straw(pg) -> osd, 使用straw算法映射osd,osd的权重越大随机被挑中的概率越大。
+  1) hash(object_name) -> pg,数据保存到object中后,使用hash_rjenkins(object_name)算法选择定位pg,类似一致性hash;
+  2) straw(pg) -> osd, 使用straw算法选择定位osd,osd的权重越大随机被挑中的概率越大.
 
-下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行。
+下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行.
 	
 ## 1. crush算法演示
 
@@ -17,7 +17,7 @@ ceph把数据保存到ceph集群分为以下两步：
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
 ## 2. hash_rjenkins算法源码
-[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)hash_rjenkins算法源码.
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins算法源码.
 
 unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 
@@ -100,7 +100,7 @@ unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 	}
 
 ## 3. straw算法源码
-[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)straw算法源码.
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) straw算法源码.
 
 osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
 
@@ -176,21 +176,21 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 	}
 		   
 ## 4. 算法调用
-[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)hash_rjenkins和straw算法调用.
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins和straw算法调用.
 ### 
 	int main()
 	{
 		char pool_name[] = "pool1";
 		int pool_id = 18;
 		
-		/* 1. object_name -> pg, hash_rjenkins算法选择pg, 类似一致性hash  */
+		/* 1. pool_id+hash_rjenkins(object_name)%pg_num ==>pg 使用hash_rjenkins算法选择pg, 类似一致性hash   */
 		int num_pg = 8;
 		char object_name[] = "object1";
 		unsigned int obj_hash = ceph_str_hash_rjenkins(object_name, strlen(object_name));
 		int pg = obj_hash % num_pg;
 		printf("ceph_str_hash_rjenkins('%s') = 0x%x(%d)\n",object_name,obj_hash,pg);
 		
-		/* 2. pg -> osd, straw算法选择osd,osd的权重越大随机被挑中的概率越大 */
+		/* 2. bucket_straw_choose(pg) ==> osd 使用traw算法选择osd,osd的权重越大随机被挑中的概率越大 */
 		int primary,replicas1,replicas2;
 		primary = bucket_straw_choose(obj_hash,1);
 		replicas1 = bucket_straw_choose(obj_hash,2);
