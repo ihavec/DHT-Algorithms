@@ -2,8 +2,8 @@
 # ceph crush算法
 
 ceph把数据保存到ceph集群分为以下两步：
-  1) hash(object_name) -> pg,数据保存到object中后,使用hash_rjenkins(object_name)算法选择定位pg,类似一致性hash;
-  2) straw(pg) -> osd, 使用straw算法选择定位osd,osd的权重越大随机被挑中的概率越大.
+  1) hash(object_name) -> pg,数据保存到object中后,使用hash_rjenkins(object_name)算法选择定位pg,pg类似一致性hash算法里的虚拟节点;
+  2) straw(pg) -> osd, 使用straw算法选择定位osd硬盘设备,osd的权重越大随机被挑中的概率越大.
 
 下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行.
 	
@@ -19,11 +19,11 @@ ceph把数据保存到ceph集群分为以下两步：
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
 ## 2. hash_rjenkins算法源码
-[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins算法源码.
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) hash_rjenkins算法源码，用于选择定位pg.
 
 unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 
-根据object name计算对应hash值,后续用该值除以pg的总数得到映射的pg.
+根据object name计算对应hash值(usigned类型),后续计算 hash%pg总数 得到定位映射的pg.
 ###
 	/*
 	 * Robert Jenkin's hash function.
@@ -102,7 +102,7 @@ unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 	}
 
 ## 3. straw算法源码
-[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) straw算法源码.
+[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c) straw算法源码,用于定位osd硬盘设备.
 
 osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机数；
 
@@ -128,7 +128,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 	#define crush_hash_seed 1315423911
 	
 	/* 
-	crush straw算法，得出一个随机数
+	返回一个随机数,参数不变返回结果也一样.
 	参数1: pg_id 
 	参数2: osd_id
 	参数3: 第c个副本
@@ -147,7 +147,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 	}
 	
 	/*
-	osd的权重越大,随机被挑中的概率越大.
+	straw算法,osd的权重越大,随机被挑中的概率越大.
 	1. crush_hash32_rjenkins1_3( pg, osd_id, r ) ===> draw
 	2. ( draw &0xffff ) * osd_weight ===> osd_straw
 	3. pick up high_osd_straw
@@ -185,7 +185,7 @@ osd_draw = crush_hash32_rjenkins1_3(pg,osd_id,r)每个osd对应一个伪随机�
 		char pool_name[] = "pool1";
 		int pool_id = 18;
 		
-		/* 1. pool_id+hash_rjenkins(object_name)%pg_num ==>pg 使用hash_rjenkins算法选择pg, 类似一致性hash   */
+		/* 1. pool_id+hash_rjenkins(object_name)%pg_num ==>pg 使用hash_rjenkins算法选择pg,pg类似一致性hash选择定位虚拟节点 */
 		int num_pg = 8;
 		char object_name[] = "object1";
 		unsigned int obj_hash = ceph_str_hash_rjenkins(object_name, strlen(object_name));
@@ -215,23 +215,23 @@ ceph测试版本,osd,pg,crush map环境:
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-architecture2.png)
 
 ## 7. crush算法伪代码
-贴出CRUSH完整算法伪代码，便于理解:
+贴出CRUSH算法和调用伪代码，便于理解:
 ### 
 	locator = object_name
 	obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins
 	pg = obj_hash % num_pg
-	OSDs_for_pg = crush(pg)  #此处是多次调用bucket_straw_choose返回结果
+	OSDs_for_pg = crush(pg)  #多次调用bucket_straw_choose返回多个副本
 	primary = osds_for_pg[0]
 	replicas = osds_for_pg[1:]
 
-	def crush(pg):  # straw算法
+	def crush(pg):  
 	   all_osds = ['osd.0', 'osd.1', 'osd.2', ...]
 	   result = []
 	   # size is the number of copies; primary+replicas
 	   while len(result) < size:
 	       r = hash(pg)
 	       chosen = all_osds[ r % len(all_osds) ]
-	       if chosen in result:  #直到选出3个不一样的OSD
+	       if chosen in result:  #直到选出多个不同的OSD
 	           # OSD can be picked only once
 	           continue
 	       result.append(chosen)

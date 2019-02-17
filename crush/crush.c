@@ -2,8 +2,8 @@
 1. 说明 
 以下代码把crush hash_rjenkins和straw算法最核心代码提取出来演示，
 把文件数据保存到ceph集群分为以下两步：
- 1) hash(object_name) -> pg, 把文件使用hash_rjenkins算法选择pg, 类似一致性hash
- 2) straw(pg) -> osd, 使用straw算法选择osd,osd的权重越大随机被挑中的概率越大
+ 1) hash(object_name) -> pg, 把文件使用hash_rjenkins算法选择pg, pg类似一致性hash算法里的虚拟节点;
+ 2) straw(pg) -> osd, 使用straw算法选择定位osd硬盘设备,osd的权重越大随机被挑中的概率越大.
 
 2. 编译和测试
 gcc crush.c -o crush
@@ -13,20 +13,20 @@ gcc crush.c -o crush
 	
 3. hash_rjenkins和straw算法伪代码
 	locator = object_name
-	obj_hash = hash(locator) //hash算法
+	obj_hash = hash(locator) #此处为ceph_str_hash_rjenkins法
 	pg = obj_hash % num_pg
-	OSDs_for_pg = crush(pg)  # returns a list of OSDs
+	OSDs_for_pg = crush(pg)  #多次调用bucket_straw_choose返回多个副本
 	primary = osds_for_pg[0]
 	replicas = osds_for_pg[1:]
 
-	def crush(pg):  //straw算法
+	def crush(pg):  
 	   all_osds = ['osd.0', 'osd.1', 'osd.2', ...]
 	   result = []
 	   # size is the number of copies; primary+replicas
 	   while len(result) < size:
 	       r = hash(pg)
 	       chosen = all_osds[ r % len(all_osds) ]
-	       if chosen in result: //直到选出3个不一样的OSD
+	       if chosen in result: #直到选出多个不同的OSD
 	           # OSD can be picked only once
 	           continue
 	       result.append(chosen)
@@ -137,7 +137,7 @@ unsigned ceph_str_hash_rjenkins(const char *str, unsigned length)
 #define crush_hash_seed 1315423911
 
 /* 
-crush straw算法，得出一个随机数
+返回一个随机数,参数不变返回结果也一样.
 参数1: pg_id 
 参数2: osd_id
 参数3: 第c个副本
@@ -156,7 +156,7 @@ static __u32 crush_hash32_rjenkins1_3(__u32 a, __u32 b, __u32 c)
 }
 
 /*
-osd的权重越大,随机被挑中的概率越大.
+straw算法,osd的权重越大,随机被挑中的概率越大.
 1. crush_hash32_rjenkins1_3( pg, osd_id, r ) ===> draw
 2. ( draw &0xffff ) * osd_weight ===> osd_straw
 3. pick up high_osd_straw
@@ -192,7 +192,7 @@ int main()
 	char pool_name[] = "pool1";
 	int pool_id = 18;
 	
-	/* 1. object_name -> pg, hash_rjenkins算法选择pg, 类似一致性hash  */
+	/* 1. object_name -> pg, hash_rjenkins算法选择pg,pg类似一致性hash选择定位虚拟节点 */
 	int num_pg = 8;
 	char object_name[] = "object1";
 	unsigned int obj_hash = ceph_str_hash_rjenkins(object_name, strlen(object_name));
