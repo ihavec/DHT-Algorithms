@@ -5,7 +5,7 @@ ceph把数据保存到ceph集群分为以下两步：
   1) hash(object_name) -> pg,数据保存到object中后,使用hash_rjenkins(object_name)算法选择定位pg,pg类似一致性hash算法里的虚拟节点;
   2) straw(pg) -> osd, 使用straw算法选择定位osd硬盘设备,osd的权重越大随机被挑中的概率越大.
 
-下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c),可单独编译运行.
+下文把ceph crush的hash_rjenkins和straw算法核心代码提取出来演示,源码[crush.c](https://github.com/larkguo/Algorithms/blob/master/crush/crush.c)可单独编译运行.
 	
 ## 1. crush算法演示
 
