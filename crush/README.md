@@ -14,7 +14,7 @@ ceph把数据保存到ceph集群分为以下两步：
 
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/crush-test.png)
 
-使用ceph命令创建pool1,把文件test.txt保存到对象object1里，查询在osd上的映射，可以看出与上面pg和osd的映射一致：
+使用ceph命令创建pool1,把文件test.txt保存到对象object1里，查询在osd上的映射,与上面pg和osd的映射一致，其中pool1的pool_id=18,pg总数pg_num=8：
 
 ![image](https://github.com/larkguo/Algorithms/blob/master/crush/data/ceph-test.png)
    
@@ -23,7 +23,7 @@ ceph把数据保存到ceph集群分为以下两步：
 
 unsigned object_hash = ceph_str_hash_rjenkins(object_name).
 
-根据object name计算对应hash值(usigned类型),后续计算 hash%pg总数 得到定位映射的pg.
+根据object name计算对应hash值(usigned类型),后续计算 hash%pg_num 得到定位映射的pg.
 ###
 	/*
 	 * Robert Jenkin's hash function.
