@@ -14,8 +14,7 @@
 #define DM_FULLROUNDS 10        /* 32 is overkill, 16 is strong crypto */
 #define DM_PARTROUNDS 6         /* 6 gets complete mixing */
 
-/* Davies-Meyer hashing function implementation
- */
+/* Davies-Meyer hashing function implementation */
 static int dm_round (int rounds, uint32_t *array, uint32_t *h0, uint32_t *h1){
         uint32_t sum = 0;
         int      n = 0;
@@ -128,7 +127,7 @@ static bool dht_munge_name (const char *original, char *modified,size_t len, reg
 }
 
 /*
-gcc dht.c -o dht
+gcc gluster-dht.c -o dht
 
 ./dht  .fio.sh
 using regex '^\.(.+)\.[^.]+$'
